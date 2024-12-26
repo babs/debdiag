@@ -1,0 +1,26 @@
+server {
+    listen [::]:8080;
+    listen 8080;
+    server_name  _;
+    add_header X-From $hostname always;
+    server_tokens off;
+
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+    location / {
+      default_type 'text/plain';
+      lua_need_request_body on;
+      content_by_lua_block {
+        ngx.say(
+          "host: ", ngx.var.hostname, "\n",
+          "server_name: ", ngx.var.server_name, "\n",
+          "local: ", ngx.var.server_addr, ":", ngx.var.server_port, "\n",
+          "remote: ", ngx.var.remote_addr, ":", ngx.var.remote_port, "\n"
+        )
+	ngx.say("---")
+        ngx.print(ngx.req.raw_header())
+	ngx.say(ngx.req.get_body_data())
+        -- ngx.say(string.format("test from ", name, key, nil))
+      }
+    }
+}
